@@ -34,16 +34,19 @@
   "Script file for completion.")
 
 (defun company-lua--parse-output (prefix)
+  "Parse output of `company-lua-complete-script' for PREFIX."
   (goto-char (point-min))
   (let ((pattern "\\(.*\\),\\(.*\\),\\(.*\\)$")
         (case-fold-search nil)
         result)
     (while (re-search-forward pattern nil t)
-      (let (word kind desc)
-        (setq word (match-string-no-properties 1))
-        (setq kind (match-string-no-properties 2))
-        (setq desc (match-string-no-properties 3))
-        (push (propertize word 'kind kind 'meta desc) result)))
+      (let ((item (match-string-no-properties 1))
+            (kind (match-string-no-properties 2))
+            (desc (match-string-no-properties 3))
+            word)
+        (when (string-prefix-p prefix item)
+          (setq word (substring-no-properties item))
+          (push (propertize word 'kind kind 'meta desc) result))))
     result))
 
 (defun company-lua--start-process (prefix callback &rest args)
@@ -79,14 +82,33 @@
   (cons :async (lambda (cb)
                  (company-lua--get-candidates prefix cb))))
 
+(defun company-lua--annotation (candidate)
+  (let ((annotation (get-text-property 0 'kind candidate)))
+    (when annotation
+      (concat " [" annotation "]"))))
+
+(defun company-lua--meta (candidate)
+  (get-text-property 0 'meta candidate))
+
+(defun company-lua--prefix ()
+  (when (and lua-mode
+             (not (company-in-string-or-comment)))
+    (with-syntax-table (copy-syntax-table)
+      (modify-syntax-entry ?. "_")
+      (modify-syntax-entry ?: "_")
+      (or (company-grab-symbol-cons "\\." 1)
+          'stop))))
+
 (defun company-lua (command &optional arg &rest ignored)
   "`company-mode' completion back-end for Lua."
   (interactive (list 'interactive))
   (cl-case command
     (interactive (company-begin-backend 'company-lua))
-    (prefix (and (not (company-in-string-or-comment))
-                 (or (company-grab-symbol) 'stop)))
-    (candidates (company-lua--candidates arg))))
+    (prefix (company-lua--prefix))
+    (candidates (company-lua--candidates arg))
+    (annotation (company-lua--annotation arg))
+    (meta (company-lua--meta arg))
+    (duplicates t)))
 
 (provide 'company-lua)
 ;;; company-lua.el ends here
