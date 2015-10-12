@@ -54,9 +54,6 @@ local function dump(table, path, cache)
         if vtype == 'boolean' or vtype == 'number' then
           addmatch(path, 'v', tostring(value))
         elseif vtype == 'string' then
-          if #value > 40 then
-            value = value:sub(1, 40) .. '..'
-          end
           addmatch(path, 'v', value)
         else
           addmatch(path, 'v', nil)
