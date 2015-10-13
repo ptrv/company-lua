@@ -91,8 +91,7 @@
   (get-text-property 0 'meta candidate))
 
 (defun company-lua--prefix ()
-  (when (and lua-mode
-             (not (company-in-string-or-comment)))
+  (unless (company-in-string-or-comment)
     (with-syntax-table (copy-syntax-table)
       (modify-syntax-entry ?. "_")
       (modify-syntax-entry ?: "_")
