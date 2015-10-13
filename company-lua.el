@@ -101,12 +101,23 @@
      (when (s-present? kind) (format " [%s]" kind)))))
 
 (defun company-lua--meta (candidate)
-  (get-text-property 0 'doc candidate))
+  (let ((kind (get-text-property 0 'kind candidate))
+        (returns (get-text-property 0 'returns candidate))
+        (args (get-text-property 0 'args candidate)))
+    (concat
+     (when (s-present? returns) (s-append " " returns))
+     candidate
+     (when (s-present? args) args))))
 
 (defun company-lua--prefix ()
   (unless (company-in-string-or-comment)
     (or (company-grab-symbol-cons "\\." 1)
         'stop)))
+
+(defun company-lua--doc-buffer (candidate)
+  (let ((doc (get-text-property 0 'doc candidate)))
+    (when (s-present? doc)
+      (company-doc-buffer doc))))
 
 (defun company-lua (command &optional arg &rest ignored)
   "`company-mode' completion back-end for Lua."
