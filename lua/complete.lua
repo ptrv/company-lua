@@ -1,103 +1,83 @@
-#!/usr/bin/env lua
-
---[[
-
--- Author: Peter Odding <peter@peterodding.com>
--- Last Change: July 12, 2014
--- URL: http://peterodding.com/code/vim/lua-ftplugin
-
--- This Lua script is executed by the Lua file type plug-in for Vim to provide
--- dynamic completion of function names defined by installed Lua modules. This
--- works by expanding package.path and package.cpath in Vim script, loading every
--- module found on the search path into this Lua script and then dumping the
--- global state.
-
---]]
-
-local keywords = { ['and'] = true, ['break'] = true, ['do'] = true,
-  ['else'] = true, ['elseif'] = true, ['end'] = true, ['false'] = true,
-  ['for'] = true, ['function'] = true, ['goto'] = true, ['if'] = true, ['in'] = true,
-  ['local'] = true, ['nil'] = true, ['not'] = true, ['or'] = true,
-  ['repeat'] = true, ['return'] = true, ['then'] = true, ['true'] = true,
-  ['until'] = true, ['while'] = true }
-
-local function isident(s)
-  return type(s) == 'string' and s:find('^[A-Za-z_][A-Za-z_0-9]*$') and not keywords[s]
+local function addmatch(word, kind, args, returns, doc)
+    word = word and word or ""
+    kind = kind and kind or ""
+    args = args and args or ""
+    returns = returns and returns or ""
+    doc = doc and doc or ""
+    print(string.format("word:%s,kind:%s,args:%s,returns:%s,doc:%s", word, kind, args, returns, doc))
 end
 
-local function addmatch(word, kind, desc)
-  if not desc then
-    -- print(string.format("{'word':'%s','kind':'%s'}", word, kind))
-    print(string.format("%s,%s,", word, kind))
-  else
-    -- Make sure we generate valid Vim script expressions (this is probably
-    -- still not right).
-    desc = desc:gsub('\n', '\\n')
-               :gsub('\r', '\\r')
-               :gsub("'", "''")
-    -- print(string.format("{'word':'%s','kind':'%s','menu':'%s'}", word, kind, desc))
-    print(string.format("%s,%s,%s", word, kind, desc))
-  end
+local getPath = function(str,sep)
+    sep=sep or'/'
+    return str:match("(.*"..sep..")")
 end
 
-local function dump(table, path, cache)
-  local printed = false
-  for key, value in pairs(table) do
-    if isident(key) then
-      local path = path and (path .. '.' .. key) or key
-      local vtype = type(value)
-      if vtype == 'function' then
-        printed = true
-        addmatch(path, 'f', path .. '()')
-      elseif vtype ~= 'table' then
-        printed = true
-        if vtype == 'boolean' or vtype == 'number' then
-          addmatch(path, 'v', tostring(value))
-        elseif vtype == 'string' then
-          addmatch(path, 'v', value)
-        else
-          addmatch(path, 'v', nil)
+local thisDir = getPath(arg[0])
+package.path = package.path .. ";" .. thisDir .. "?.lua"
+
+function string.starts(String,Start)
+    return string.sub(String,1,string.len(Start))==Start
+end
+
+local function getValueForKey(t, key)
+    for k, v in pairs(t) do
+        if k == key then
+            if v.childs then
+                return v.childs
+            end
         end
-      elseif not cache[value] then
-        cache[value] = true
-        if dump(value, path, cache) then
-          printed = true
-        else
-          addmatch(path, 't', path .. '[]')
+    end
+
+    return nil
+end
+
+local function generateList()
+    local prefix = arg[1]
+    local prefixTable = {}
+    local count = 1
+    if not prefix then
+        return
+    end
+
+    local lastCharIsTrigger = string.sub(prefix, -1) == '.'
+
+    for str in string.gmatch(prefix, "[^.]+") do
+        prefixTable[count] = str
+        count = count + 1
+    end
+
+    local status, module = pcall(require, "api/baselib")
+    if status and module then
+
+        local mod = module
+
+        for i = 1, #prefixTable do
+            if i == #prefixTable then
+                if lastCharIsTrigger then
+                    local val = getValueForKey(mod, prefixTable[i])
+                    if val then
+                        mod = val
+                    end
+                end
+                for k, v in pairs(mod) do
+                    if string.starts(k, prefixTable[i]) or lastCharIsTrigger then
+                        local word, kind, args, returns, doc
+                        word = k
+                        kind = v.type and v.type
+                        args = v.args and v.args
+                        returns = v.returns and v.returns
+                        doc = v.description and v.description
+                        addmatch(word, kind, args, returns, doc)
+                    end
+                end
+            else
+                local val = getValueForKey(mod, prefixTable[i])
+                if val then
+                    mod = val
+                end
+            end
         end
-      end
     end
-  end
-  return printed
 end
 
--- Add keywords to completion candidates.
-for kw, _ in pairs(keywords) do
-  addmatch(kw, 'k', nil)
-end
-
-local function global_exists(name)
-  -- Don't crash on strict.lua.
-  return pcall(function()
-    if not _G[name] then
-      -- Simulate strict.lua when it isn't active so that we can stick to a
-      -- single code path.
-      error("variable " .. name .. " is not declared")
-    end
-  end)
-end
-
--- Load installed modules.
--- XXX What if module loading has side effects? It shouldn't, but still...
-for i = 1, #arg do
-  local modulename = arg[i]
-  local status, module = pcall(require, modulename)
-  if status and module and not global_exists(modulename) then
-    _G[modulename] = module
-  end
-end
-
--- Generate completion candidates from global state.
-local cache = { [_G] = true, [package.loaded] = true }
-local output = {}
-dump(_G, nil, cache, output)
+generateList()

@@ -46,15 +46,16 @@
 (defun company-lua--parse-output (prefix)
   "Parse output of `company-lua-complete-script' for PREFIX."
   (goto-char (point-min))
-  (let ((pattern "\\(.*\\),\\(.*\\),\\(.*\\)$")
+  (let ((pattern "word:\\(.*\\),kind:\\(.*\\),args:\\(.*\\),returns:\\(.*\\),doc:\\(.*\\)$")
         (case-fold-search nil)
         result)
     (while (re-search-forward pattern nil t)
       (let ((item (match-string-no-properties 1))
             (kind (match-string-no-properties 2))
-            (desc (match-string-no-properties 3)))
-        (when (string-prefix-p prefix item)
-          (push (propertize item 'kind kind 'meta desc) result))))
+            (args (match-string-no-properties 3))
+            (returns (match-string-no-properties 4))
+            (doc (match-string-no-properties 5)))
+        (push (propertize item 'kind kind 'args args 'returns returns 'doc doc) result)))
     result))
 
 (defun company-lua--start-process (prefix callback &rest args)
@@ -76,14 +77,15 @@
               (with-current-buffer buf
                 (company-lua--parse-output prefix))))))))))
 
-(defun company-lua--build-args ()
-  (list company-lua-complete-script))
+(defun company-lua--build-args (prefix)
+  (list company-lua-complete-script
+        (substring-no-properties prefix)))
 
 (defun company-lua--get-candidates (prefix callback)
   (apply 'company-lua--start-process
          prefix
          callback
-         (company-lua--build-args)))
+         (company-lua--build-args prefix)))
 
 (defun company-lua--candidates (prefix)
   "Candidates handler for the company backend."
@@ -91,12 +93,16 @@
                  (company-lua--get-candidates prefix cb))))
 
 (defun company-lua--annotation (candidate)
-  (let ((annotation (get-text-property 0 'kind candidate)))
-    (when annotation
-      (concat " [" annotation "]"))))
+  (let ((kind (get-text-property 0 'kind candidate))
+        (returns (get-text-property 0 'returns candidate))
+        (args (get-text-property 0 'args candidate)))
+    (concat
+     (when (s-present? args) args)
+     (when (s-present? returns) (s-prepend " -> " returns))
+     (when (s-present? kind) (format " [%s]" kind)))))
 
 (defun company-lua--meta (candidate)
-  (get-text-property 0 'meta candidate))
+  (get-text-property 0 'doc candidate))
 
 (defun company-lua--prefix ()
   (unless (company-in-string-or-comment)
