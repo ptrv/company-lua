@@ -29,6 +29,16 @@
 (require 's)
 
 
+(defgroup company-lua nil
+  "Completion backend for Lua."
+  :group 'company)
+
+(defcustom company-lua-executable
+  (executable-find "lua")
+  "Location of Lua executable."
+  :type 'file
+  :group 'company-lua)
+
 (defvar company-lua-complete-script
   (f-join (f-dirname (f-this-file)) "lua/complete.lua")
   "Script file for completion.")
@@ -56,7 +66,7 @@
         (erase-buffer)
         (setq buffer-undo-list t))
       (let ((process (apply #'start-process "lua" buf
-                            "lua" args)))
+                            company-lua-executable args)))
         (set-process-sentinel
          process
          (lambda (proc status)
