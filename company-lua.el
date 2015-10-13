@@ -55,6 +55,8 @@
             (args (match-string-no-properties 3))
             (returns (match-string-no-properties 4))
             (doc (match-string-no-properties 5)))
+        (when doc
+          (setq doc (s-replace "\\n" "\n" doc)))
         (push (propertize item 'kind kind 'args args 'returns returns 'doc doc) result)))
     result))
 
@@ -128,6 +130,7 @@
     (candidates (company-lua--candidates arg))
     (annotation (company-lua--annotation arg))
     (meta (company-lua--meta arg))
+    (doc-buffer (company-lua--doc-buffer arg))
     (duplicates t)))
 
 (provide 'company-lua)

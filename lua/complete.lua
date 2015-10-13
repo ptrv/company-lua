@@ -3,7 +3,7 @@ local function addmatch(word, kind, args, returns, doc)
     kind = kind and kind or ""
     args = args and args or ""
     returns = returns and returns or ""
-    doc = doc and doc or ""
+    doc = doc and doc:gsub("\n", "\\n") or ""
     print(string.format("word:%s,kind:%s,args:%s,returns:%s,doc:%s", word, kind, args, returns, doc))
 end
 
