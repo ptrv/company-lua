@@ -28,7 +28,7 @@ end
 local function addmatch(word, kind, desc)
   if not desc then
     -- print(string.format("{'word':'%s','kind':'%s'}", word, kind))
-    print(string.format("%s,%s,no desc", word, kind))
+    print(string.format("%s,%s,", word, kind))
   else
     -- Make sure we generate valid Vim script expressions (this is probably
     -- still not right).
