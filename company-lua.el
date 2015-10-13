@@ -77,15 +77,14 @@
               (with-current-buffer buf
                 (company-lua--parse-output prefix))))))))))
 
-(defun company-lua--build-args (prefix)
-  (list company-lua-complete-script
-        (substring-no-properties prefix)))
+(defun company-lua--build-args ()
+  (list company-lua-complete-script (lua-funcname-at-point)))
 
 (defun company-lua--get-candidates (prefix callback)
   (apply 'company-lua--start-process
          prefix
          callback
-         (company-lua--build-args prefix)))
+         (company-lua--build-args)))
 
 (defun company-lua--candidates (prefix)
   "Candidates handler for the company backend."
@@ -106,11 +105,8 @@
 
 (defun company-lua--prefix ()
   (unless (company-in-string-or-comment)
-    (with-syntax-table (copy-syntax-table)
-      (modify-syntax-entry ?. "_")
-      (modify-syntax-entry ?: "_")
-      (or (company-grab-symbol-cons "\\." 1)
-          'stop))))
+    (or (company-grab-symbol-cons "\\." 1)
+        'stop)))
 
 (defun company-lua (command &optional arg &rest ignored)
   "`company-mode' completion back-end for Lua."

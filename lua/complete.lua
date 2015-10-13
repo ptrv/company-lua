@@ -27,7 +27,6 @@ local function getValueForKey(t, key)
             end
         end
     end
-
     return nil
 end
 
@@ -57,6 +56,8 @@ local function generateList()
                     local val = getValueForKey(mod, prefixTable[i])
                     if val then
                         mod = val
+                    else
+                        break
                     end
                 end
                 for k, v in pairs(mod) do
@@ -72,8 +73,10 @@ local function generateList()
                 end
             else
                 local val = getValueForKey(mod, prefixTable[i])
-                if val then
+                if val and not cache[val] then
                     mod = val
+                else
+                    break
                 end
             end
         end
