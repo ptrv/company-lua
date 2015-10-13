@@ -30,7 +30,7 @@
 
 
 (defvar company-lua-complete-script
-  (f-join (f-dirname (or buffer-file-name load-file-name)) "lua/complete.lua")
+  (f-join (f-dirname (f-this-file)) "lua/complete.lua")
   "Script file for completion.")
 
 (defun company-lua--parse-output (prefix)
