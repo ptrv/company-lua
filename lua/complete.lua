@@ -30,8 +30,23 @@ local function getValueForKey(t, key)
     return nil
 end
 
+local validForInterpreter = function(s, interp)
+    local interpreterString
+    if interp == "lua51" then
+        if string.match(s, "ADDED IN Lua") then
+            return false
+        end
+    elseif interp == "lua52" then
+        if string.match(s, "ADDED IN Lua 5.3") then
+            return false
+        end
+    end
+    return true
+end
+
 local function generateList()
-    local prefix = arg[1]
+    local interpreter = arg[1]
+    local prefix = arg[2]
     local prefixTable = {}
     local count = 1
     if not prefix then
@@ -45,38 +60,45 @@ local function generateList()
         count = count + 1
     end
 
-    local status, module = pcall(require, "api/baselib")
-    if status and module then
+    local apis = {"baselib"}
+    if interpreter == "love" then
+        table.insert(apis, "love2d")
+    end
 
-        local mod = module
-
-        for i = 1, #prefixTable do
-            if i == #prefixTable then
-                if lastCharIsTrigger then
+    for _, api in pairs(apis) do
+        local status, module = pcall(require, "api/" .. api)
+        if status and module then
+            local mod = module
+            for i = 1, #prefixTable do
+                if i == #prefixTable then
+                    if lastCharIsTrigger then
+                        local val = getValueForKey(mod, prefixTable[i])
+                        if val then
+                            mod = val
+                        else
+                            break
+                        end
+                    end
+                    for k, v in pairs(mod) do
+                        if string.starts(k, prefixTable[i]) or lastCharIsTrigger then
+                            local word, kind, args, returns, doc
+                            word = k
+                            kind = v.type and v.type
+                            args = v.args and v.args
+                            returns = v.returns and v.returns
+                            doc = v.description and v.description
+                            if validForInterpreter(doc, interpreter) then
+                                addmatch(word, kind, args, returns, doc)
+                            end
+                        end
+                    end
+                else
                     local val = getValueForKey(mod, prefixTable[i])
                     if val then
                         mod = val
                     else
                         break
                     end
-                end
-                for k, v in pairs(mod) do
-                    if string.starts(k, prefixTable[i]) or lastCharIsTrigger then
-                        local word, kind, args, returns, doc
-                        word = k
-                        kind = v.type and v.type
-                        args = v.args and v.args
-                        returns = v.returns and v.returns
-                        doc = v.description and v.description
-                        addmatch(word, kind, args, returns, doc)
-                    end
-                end
-            else
-                local val = getValueForKey(mod, prefixTable[i])
-                if val and not cache[val] then
-                    mod = val
-                else
-                    break
                 end
             end
         end

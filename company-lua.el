@@ -39,6 +39,15 @@
   :type 'file
   :group 'company-lua)
 
+(defcustom company-lua-interpreter 'lua52
+  "Lua interpreter."
+  :group 'company-lua
+  :type '(choice (const :tag "Lua 5.1" lua51)
+                 (const :tag "Lua 5.2" lua52)
+                 (const :tag "Lua 5.2" lua53)
+                 (const :tag "LÖVE" love))
+  :safe #'symbolp)
+
 (defvar company-lua-complete-script
   (f-join (f-dirname (f-this-file)) "lua/complete.lua")
   "Script file for completion.")
@@ -79,8 +88,15 @@
               (with-current-buffer buf
                 (company-lua--parse-output prefix))))))))))
 
+(defun company-lua--get-interpreter()
+  (if (memq company-lua-interpreter '(lua51 lua52 lua53 love))
+      (symbol-name company-lua-interpreter)
+    "lua52"))
+
 (defun company-lua--build-args ()
-  (list company-lua-complete-script (lua-funcname-at-point)))
+  (list company-lua-complete-script
+        (company-lua--get-interpreter)
+        (lua-funcname-at-point)))
 
 (defun company-lua--get-candidates (prefix callback)
   (apply 'company-lua--start-process
