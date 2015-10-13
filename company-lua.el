@@ -48,12 +48,12 @@
                  (const :tag "LÖVE" love))
   :safe #'symbolp)
 
-(defvar company-lua-complete-script
+(defconst company-lua-complete-script
   (f-join (f-dirname (f-this-file)) "lua/complete.lua")
   "Script file for completion.")
 
-(defun company-lua--parse-output (prefix)
-  "Parse output of `company-lua-complete-script' for PREFIX."
+(defun company-lua--parse-output ()
+  "Parse output of `company-lua-complete-script'."
   (goto-char (point-min))
   (let ((pattern "word:\\(.*\\),kind:\\(.*\\),args:\\(.*\\),returns:\\(.*\\),doc:\\(.*\\)$")
         (case-fold-search nil)
@@ -69,7 +69,7 @@
         (push (propertize item 'kind kind 'args args 'returns returns 'doc doc) result)))
     result))
 
-(defun company-lua--start-process (prefix callback &rest args)
+(defun company-lua--start-process (callback &rest args)
   (let ((buf (get-buffer-create "*company-lua-output*"))
         (process-adaptive-read-buffering nil))
     (if (get-buffer-process buf)
@@ -86,7 +86,7 @@
             callback
             (let ((res (process-exit-status proc)))
               (with-current-buffer buf
-                (company-lua--parse-output prefix))))))))))
+                (company-lua--parse-output))))))))))
 
 (defun company-lua--get-interpreter()
   (if (memq company-lua-interpreter '(lua51 lua52 lua53 love))
@@ -98,16 +98,14 @@
         (company-lua--get-interpreter)
         (lua-funcname-at-point)))
 
-(defun company-lua--get-candidates (prefix callback)
+(defun company-lua--get-candidates (callback)
   (apply 'company-lua--start-process
-         prefix
-         callback
-         (company-lua--build-args)))
+         callback (company-lua--build-args)))
 
-(defun company-lua--candidates (prefix)
+(defun company-lua--candidates ()
   "Candidates handler for the company backend."
   (cons :async (lambda (cb)
-                 (company-lua--get-candidates prefix cb))))
+                 (company-lua--get-candidates cb))))
 
 (defun company-lua--annotation (candidate)
   (let ((kind (get-text-property 0 'kind candidate))
@@ -143,7 +141,7 @@
   (cl-case command
     (interactive (company-begin-backend 'company-lua))
     (prefix (company-lua--prefix))
-    (candidates (company-lua--candidates arg))
+    (candidates (company-lua--candidates))
     (annotation (company-lua--annotation arg))
     (meta (company-lua--meta arg))
     (doc-buffer (company-lua--doc-buffer arg))

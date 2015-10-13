@@ -15,7 +15,7 @@ end
 local thisDir = getPath(arg[0])
 package.path = package.path .. ";" .. thisDir .. "?.lua"
 
-function string.starts(String,Start)
+local stringStartsWith = function(String,Start)
     return string.sub(String,1,string.len(Start))==Start
 end
 
@@ -31,7 +31,6 @@ local function getValueForKey(t, key)
 end
 
 local validForInterpreter = function(s, interp)
-    local interpreterString
     if interp == "lua51" then
         if string.match(s, "ADDED IN Lua") then
             return false
@@ -48,7 +47,7 @@ local function generateList()
     local interpreter = arg[1]
     local prefix = arg[2]
     local prefixTable = {}
-    local count = 1
+
     if not prefix then
         return
     end
@@ -56,8 +55,7 @@ local function generateList()
     local lastCharIsTrigger = string.sub(prefix, -1) == '.'
 
     for str in string.gmatch(prefix, "[^.]+") do
-        prefixTable[count] = str
-        count = count + 1
+        table.insert(prefixTable, str)
     end
 
     local apis = {"baselib"}
@@ -80,7 +78,7 @@ local function generateList()
                         end
                     end
                     for k, v in pairs(mod) do
-                        if string.starts(k, prefixTable[i]) or lastCharIsTrigger then
+                        if stringStartsWith(k, prefixTable[i]) or lastCharIsTrigger then
                             local word, kind, args, returns, doc
                             word = k
                             kind = v.type and v.type
