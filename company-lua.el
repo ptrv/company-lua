@@ -42,11 +42,9 @@
     (while (re-search-forward pattern nil t)
       (let ((item (match-string-no-properties 1))
             (kind (match-string-no-properties 2))
-            (desc (match-string-no-properties 3))
-            word)
+            (desc (match-string-no-properties 3)))
         (when (string-prefix-p prefix item)
-          (setq word (substring-no-properties item))
-          (push (propertize word 'kind kind 'meta desc) result))))
+          (push (propertize item 'kind kind 'meta desc) result))))
     result))
 
 (defun company-lua--start-process (prefix callback &rest args)
