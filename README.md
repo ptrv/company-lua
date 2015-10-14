@@ -3,6 +3,11 @@
 Company-lua is a [company-mode](http://company-mode.github.io/)
 completion backend for `Lua`.
 
+We use api files from
+[ZeroBrane Studio](https://github.com/pkulchenko/ZeroBraneStudio) as source for
+the completion candidates. Right now only Lua 5.1, 5.2, 5.3 and
+[LÖVE](https://love2d.org/) are supported.
+
 ## Installation ##
 
 ### Manual ###
