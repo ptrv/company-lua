@@ -68,15 +68,16 @@ local function generateList()
         if status and module then
             local mod = module
             for i = 1, #prefixTable do
-                if i == #prefixTable then
-                    if lastCharIsTrigger then
-                        local val = getValueForKey(mod, prefixTable[i])
-                        if val then
-                            mod = val
-                        else
-                            break
-                        end
+                if i ~= #prefixTable or lastCharIsTrigger then
+                    local val = getValueForKey(mod, prefixTable[i])
+                    if val then
+                        mod = val
+                    else
+                        break
                     end
+                end
+
+                if i == #prefixTable then
                     for k, v in pairs(mod) do
                         if stringStartsWith(k, prefixTable[i]) or lastCharIsTrigger then
                             local word, kind, args, returns, doc
@@ -89,13 +90,6 @@ local function generateList()
                                 addmatch(word, kind, args, returns, doc)
                             end
                         end
-                    end
-                else
-                    local val = getValueForKey(mod, prefixTable[i])
-                    if val then
-                        mod = val
-                    else
-                        break
                     end
                 end
             end
