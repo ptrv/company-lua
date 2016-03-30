@@ -137,6 +137,7 @@
     (when (s-present? doc)
       (company-doc-buffer doc))))
 
+;;;###autoload
 (defun company-lua (command &optional arg &rest ignored)
   "`company-mode' completion back-end for Lua."
   (interactive (list 'interactive))
