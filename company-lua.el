@@ -4,6 +4,7 @@
 
 ;; Author: Peter Vasil <mail@petervasil.net>
 ;; Keywords:
+;; Package-Requires: ((company "0.8.12") (s "1.10.0") (f "0.17.0") (lua-mode "20151025"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -24,6 +25,7 @@
 
 ;;; Code:
 
+(require 'company)
 (require 'lua-mode)
 (require 'f)
 (require 's)
@@ -135,6 +137,7 @@
     (when (s-present? doc)
       (company-doc-buffer doc))))
 
+;;;###autoload
 (defun company-lua (command &optional arg &rest ignored)
   "`company-mode' completion back-end for Lua."
   (interactive (list 'interactive))
