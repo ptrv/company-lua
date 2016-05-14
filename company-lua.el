@@ -143,8 +143,7 @@
   (interactive (list 'interactive))
   (cl-case command
     (interactive (company-begin-backend 'company-lua))
-    (init (when (and (eq major-mode 'lua-mode)
-                     (not company-lua-executable))
+    (init (unless company-lua-executable
             (error "Company found no Lua executable")))
     (prefix (company-lua--prefix))
     (candidates (company-lua--candidates))
