@@ -128,9 +128,9 @@
      (when (s-present? args) args))))
 
 (defun company-lua--prefix ()
-  (unless (company-in-string-or-comment)
-    (or (company-grab-symbol-cons "\\." 1)
-        'stop)))
+  (and (derived-mode-p 'lua-mode)
+       (not (company-in-string-or-comment))
+       (or (company-grab-symbol-cons "\\." 1) 'stop)))
 
 (defun company-lua--doc-buffer (candidate)
   (let ((doc (get-text-property 0 'doc candidate)))
