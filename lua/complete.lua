@@ -58,7 +58,7 @@ local function generateList()
     table.insert(prefixTable, str)
   end
 
-  local apis = {"baselib"}
+  local apis = {"baselib", "torch", "nn"}
   if interpreter == "love" then
     table.insert(apis, "love2d")
   end
