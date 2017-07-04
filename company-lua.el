@@ -47,7 +47,8 @@
   :type '(choice (const :tag "Lua 5.1" lua51)
                  (const :tag "Lua 5.2" lua52)
                  (const :tag "Lua 5.2" lua53)
-                 (const :tag "LÖVE" love))
+                 (const :tag "LÖVE" love)
+		 (const :tag "Torch" torch))
   :safe #'symbolp)
 
 (defconst company-lua-complete-script
@@ -91,7 +92,7 @@
                 (company-lua--parse-output))))))))))
 
 (defun company-lua--get-interpreter()
-  (if (memq company-lua-interpreter '(lua51 lua52 lua53 love))
+  (if (memq company-lua-interpreter '(lua51 lua52 lua53 love torch))
       (symbol-name company-lua-interpreter)
     "lua52"))
 
