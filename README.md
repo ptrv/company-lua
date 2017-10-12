@@ -23,12 +23,19 @@ Add the following to your `init.el`:
 ```lisp
 (require 'company)
 (require 'company-lua)
-(add-to-list 'company-backends 'company-lua)
 ```
 
-or if you only want to use `company-lua` as backend:
+Since this backend only gives completion results for lua keywords it might be
+good to use `company-lua` in combination with other backends instead adding the
+it to `company-backends`.
 
 ```lisp
-(add-hook 'lua-mode-hook
-          (lambda () (setq-local company-backends '(company-lua))))
+(defun my-lua-mode-company-init ()
+  (setq-local company-backends '((company-lua
+                                  company-etags
+                                  company-dabbrev-code
+                                  company-yasnippet))))
+(add-hook 'lua-mode-hook #'my-lua-mode-company-init)
 ```
+
+See documentation of `company-backends`.
