@@ -26,8 +26,8 @@ Add the following to your `init.el`:
 ```
 
 Since this backend only gives completion results for lua keywords it might be
-good to use `company-lua` in combination with other backends instead adding the
-it to `company-backends`.
+good to use `company-lua` in combination with other backends instead adding it
+to `company-backends` as single backend.
 
 ```lisp
 (defun my-lua-mode-company-init ()
