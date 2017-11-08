@@ -31,6 +31,9 @@ local function getValueForKey(t, key)
 end
 
 local validForInterpreter = function(s, interp)
+  if not s then
+    return false
+  end
   if interp == "lua51" then
     if string.match(s, "ADDED IN Lua") then
       return false
