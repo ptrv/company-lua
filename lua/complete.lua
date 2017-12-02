@@ -65,6 +65,10 @@ local function generateList()
   if interpreter == "love" then
     table.insert(apis, "love2d")
   end
+  if interpreter == "torch" then
+    table.insert(apis, "torch")
+    table.insert(apis, "nn")
+  end
 
   for _, api in pairs(apis) do
     local status, module = pcall(require, "api/" .. api)
